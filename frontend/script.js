@@ -1,38 +1,43 @@
-const API_BASE = "https://your-app-name.onrender.com";
+const API_BASE = "https://your-app-name.onrender.com"; // Replace when deployed
 
 document.getElementById("shorten-btn").addEventListener("click", async () => {
-    const input = document.getElementById("url-input");
-    const url = input.value.trim();
-
-    if (!url) {
-        alert("Please enter a URL!");
-        return;
-    }
+    const url = document.getElementById("url-input").value;
+    if (!url) return alert("Please enter a URL!");
 
     try {
-        const response = await fetch(`${API_BASE}/shorten`, {
+        const res = await fetch(`${API_BASE}/shorten`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ url })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
         });
-
-        const data = await response.json();
+        const data = await res.json();
 
         if (data.short_url) {
-            const output = document.getElementById("short-url");
-            output.innerHTML = `
-                <p>Shortened URL:</p>
-                <a href="${data.short_url}" target="_blank">${data.short_url}</a>
-                <button onclick="navigator.clipboard.writeText('${data.short_url}')">📋 Copy</button>
-            `;
-            input.value = ""; 
+            document.getElementById("short-url").innerHTML = `<a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
         } else {
-            alert("Something went wrong. No short URL returned.");
+            alert("Error shortening URL.");
         }
-    } catch (error) {
-        alert("Could not connect to the backend.");
-        console.error(error);
+    } catch (err) {
+        alert("Server error.");
+        console.error(err);
+    }
+});
+
+document.getElementById("expand-btn").addEventListener("click", async () => {
+    const shortCode = document.getElementById("expand-input").value;
+    if (!shortCode) return alert("Enter short code to expand!");
+
+    try {
+        const res = await fetch(`${API_BASE}/expand/${shortCode}`);
+        const data = await res.json();
+
+        if (data.original_url) {
+            document.getElementById("expanded-url").innerText = data.original_url;
+        } else {
+            alert("Short code not found.");
+        }
+    } catch (err) {
+        alert("Error connecting to server.");
+        console.error(err);
     }
 });
